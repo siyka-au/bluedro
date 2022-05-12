@@ -1,0 +1,3 @@
+[submodule "LS7366"]
+	path = LS7366
+	url = https://github.com/davidjabon/LS7366.git

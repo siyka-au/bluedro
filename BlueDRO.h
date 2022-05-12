@@ -34,47 +34,47 @@
 */
 /**************************************************************************/
 
-#ifndef _SIYKA_BLE_DRO_H_
-#define _SIYKA_BLE_DRO_H_
+#ifndef _BLUEDRO_
+#define _BLUEDRO_
 
 #include <Arduino.h>
 #include "Adafruit_BLE.h"
 #include "Adafruit_BLEGatt.h"
 
-class Siyka_BLE_DRO
-{
+class BlueDRO {
   private:
     static uint8_t serviceUuid[16];
-    static uint8_t characteristicUuid0[16];
-    static uint8_t characteristicUuid1[16];
-    static uint8_t characteristicUuid2[16];
-    static uint8_t characteristicUuid3[16];
-    static uint8_t characteristicUuid4[16];
+    static uint8_t positionCharacteristicUuid[16];
+    static uint8_t numeratorCharacteristicUuid[16];
+    static uint8_t denominatorCharacteristicUuid[16];
+    static uint8_t diameterModeCharacteristicUuid[16];
+    static uint8_t reverseCharacteristicUuid[16];
+    static uint8_t setPositionCharacteristicUuid[16];
 
     uint8_t serviceId;
-    uint8_t characteristicId0;
-    uint8_t characteristicId1;
-    uint8_t characteristicId2;
-    uint8_t characteristicId3;
-    uint8_t characteristicId4;
-
-    struct data_t
-    {
-      float position;
-      uint8_t units;
-      uint8_t unused;
-    } data;
+    uint8_t positionCharacteristicId;
+    uint8_t numeratorCharacteristicId;
+    uint8_t denominatorCharacteristicId;
+    uint8_t diameterModeCharacteristicId;
+    uint8_t reverseCharacteristicId;
+    uint8_t setPositionCharacteristicId;
     
     Adafruit_BLE& _ble;
     Adafruit_BLEGatt _gatt;
 
   public:
-    Siyka_BLE_DRO(Adafruit_BLE& ble);
+    BlueDRO(Adafruit_BLE& ble);
 
     bool begin(bool reset = true);
-    bool stop (bool reset = true);
+    bool end(bool reset = true);
 
-    bool update(float position);
+    bool update(int32_t counter);
+
+    int32_t position;
+    int32_t numerator;
+    int32_t denominator;
+    bool diameterMode;
+    bool reverse;
 };
 
-#endif /* _SIYKA_BLE_DRO_H_ */
+#endif /* _BLUEDRO_ */
