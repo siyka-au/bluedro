@@ -58,6 +58,8 @@ class BlueDRO {
     uint8_t diameterModeCharacteristicId;
     uint8_t reverseCharacteristicId;
     uint8_t setPositionCharacteristicId;
+
+    static void bleRXCallback(int32_t characteristicId, uint8_t data[], uint16_t dataLength);
     
     Adafruit_BLE& _ble;
     Adafruit_BLEGatt _gatt;

@@ -59,12 +59,14 @@ BlueDRO dro(ble);
 LS7366 counter(COUNTER_CHIPSEL);
 
 // A small helper
-void error(const __FlashStringHelper*err) {
+void error(const __FlashStringHelper*err)
+{
   Serial.println(err);
   while (1);
 }
 
-void connected(void) {
+void connected(void)
+{
   Serial.println(F("BLE Connected"));
 }
 
@@ -73,18 +75,8 @@ void disconnected(void)
   Serial.println(F("BLE Disconnected"));
 }
 
-void BleGattRX(int32_t chars_id, uint8_t data[], uint16_t len)
+void setup(void)
 {
-  Serial.print(F("[BLE GATT RX] (" ));
-  Serial.print(chars_id);
-  Serial.println(")");
-  
-//  int32_t val;
-//  memcpy(&val, data, len);
-//  Serial.println(val);
-}
-
-void setup(void) {
   Serial.begin(115200);
 
   Serial.print(F("Initialising the Bluefruit LE module: "));
@@ -111,10 +103,6 @@ void setup(void) {
   /* Set callbacks */
   ble.setConnectCallback(connected);
   ble.setDisconnectCallback(disconnected);
-  ble.setBleGattRxCallback(1, BleGattRX);
-  ble.setBleGattRxCallback(2, BleGattRX);
-  ble.setBleGattRxCallback(3, BleGattRX);
-  ble.setBleGattRxCallback(4, BleGattRX);
 
   Serial.println(F("Initialising the LS7366R"));
 
@@ -127,93 +115,112 @@ void setup(void) {
 }
 
 int32_t lastCount = 0;
+uint8_t lastBatteryPercentage = 0;
 
-void loop(void) {
+void loop(void)
+{
+  // Counter handling
   int32_t count = counter.read_counter();
 
   if (count != lastCount) {
-    Serial.print("Count = ");
-    Serial.print(count);
-
     dro.update(count);
-
-    Serial.print(" - Position = ");
+    
+    Serial.print(F("Count: "));
+    Serial.print(count);
+    Serial.print(F(" - Position: "));
     Serial.println(dro.position);
   }
 
   lastCount = count;
-  
+
+  // Battery handling
   float vBatMeasured = analogRead(VBATPIN) * 2 * 3.3 / 1024;
-  float batteryPercentage = 123 - 123 / (pow(1 + pow(vBatMeasured / 3.7, 80), 0.165));
+  uint8_t batteryPercentage = 123 - 123 / (pow(1 + pow(vBatMeasured / 3.7, 80), 0.165));
   
-  if ( batteryPercentage > 100)
+  if (batteryPercentage > 100)
     batteryPercentage = 100;
     
   if (batteryPercentage < 0)
     batteryPercentage = 0;
-  
-//  Serial.print("Vbat: " );
-//  Serial.println(vBatMeasured);
-//  Serial.print("Battery %: " );
-//  Serial.println(batteryPercentage);
-  battery.update(batteryPercentage);
+
+  if (batteryPercentage != lastBatteryPercentage) {
+    battery.update(batteryPercentage);
+    
+    Serial.print(F("Battery Voltage: "));
+    Serial.print(vBatMeasured);
+    Serial.print(F(" - Battery %: "));
+    Serial.println(batteryPercentage);
+  }
+
+  lastBatteryPercentage = batteryPercentage;
 
   // Serial command interface for testing
   if (Serial.available()) {
-    char command = (char)Serial.read();
-    switch (command) {      
-      case 'c':
-        Serial.println("Clearing counter");
+    int z = Serial.read();
+    Serial.print(F("Serial data received: '"));
+    Serial.print((char) z);
+    Serial.print(F("' - "));
+    Serial.println(z);
+    char command = (char)z;
+    switch (command) {       
+      case 'c': {
+        Serial.println(F("Clearing counter"));
         counter.clear_counter();
         break;
+      }
 
-      case 'd':
+      case 'd': {
         if (ble.writeNVM(0, 1)) {
           dro.numerator = 1;
-          Serial.println("Writing 1 to numerator in NVM");
+          Serial.println(F("Writing 1 to numerator in NVM"));
         } else {
-          Serial.println("Failed to set numerator to 1 in NVM");
+          Serial.println(F("Failed to set numerator to 1 in NVM"));
         }
         break;
+      }
 
-      case 'e':
+      case 'e': {
         if (ble.writeNVM(0, 10)) {
           dro.numerator = 10;
-          Serial.println("Writing 10 to numerator in NVM");
+          Serial.println(F("Writing 10 to numerator in NVM"));
         } else {
-          Serial.println("Failed to set numerator to 10 in NVM");
+          Serial.println(F("Failed to set numerator to 10 in NVM"));
         }
         break;
+      }
 
-      case 'f':
+      case 'f': {
         int32_t nvmContent;
         if (ble.readNVM(0, &nvmContent)) {
-          Serial.print("NVM = ");
+          Serial.print(F("NVM = "));
           Serial.println(nvmContent);
         } else {
-          Serial.println("Failed to read NVM");
+          Serial.println(F("Failed to read NVM"));
         }
         break;
+      }
   
-      case 'm':
-        Serial.println("Setting counter to 1000");
+      case 'm': {
         counter.write_data_register(1000);
         counter.load_counter();
+        Serial.println(F("Setting counter to 1000"));
         break;
+      }
 
-      case 'o':
+      case 'o': {
         uint32_t otr = counter.read_OTR();
-        Serial.print("OTR: ");
+        Serial.print(F("OTR: "));
         Serial.println(otr);
         break;
-        
-      default:
+      }
+
+      default: {
         Serial.print(command);
-        Serial.println(" not supported");
+        Serial.println(F(" not supported"));
         break;
+      }
     }
   }
 
   ble.update(200);
-  
 }
