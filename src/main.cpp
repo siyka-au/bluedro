@@ -14,7 +14,7 @@
 #include "LS7366.h"
 
 constexpr auto kBufferSize = 128;   // Size of the read buffer for incoming data
-constexpr auto kVerboseMode = true; // If set to 'true' enables debug output
+constexpr auto kVerboseMode = false; // If set to 'true' enables debug output
 constexpr auto kFactoryResetEnable = false;
 
 constexpr auto kBluefruitSpiChipSel = 8;
@@ -55,17 +55,14 @@ void setup(void)
     }
   }
 
+  ble.setDevName("BlueDRO");
+
   // Enable Battery and DRO service then reset Bluefruit
   battery.begin();
   dro.begin();
-  // ble.reset();
 
   ble.info();
   
-  /* Set callbacks */
-  // ble.setConnectionListener(connected);
-  // ble.setDisconnectionListener(disconnected);
-
   Serial.println(F("Initialising the LS7366R"));
 
   counter.write_mode_register_0(FILTER_1 | DISABLE_INDX | FREE_RUN | QUADRX4);
@@ -87,10 +84,10 @@ void loop(void)
   if (count != lastCount) {
     dro.update(count);
     
-    Serial.print(F("Count: "));
-    Serial.print(count);
-    Serial.print(F(" - Position: "));
-    Serial.println(dro.position());
+    //Serial.print(F("Count: "));
+    //Serial.print(count);
+    //Serial.print(F(" - Position: "));
+    //Serial.println(dro.position());
   }
 
   lastCount = count;
@@ -108,10 +105,10 @@ void loop(void)
   if (batteryPercentage != lastBatteryPercentage) {
     battery.update(batteryPercentage);
     
-    Serial.print(F("Battery Voltage: "));
-    Serial.print(vBatMeasured);
-    Serial.print(F(" - Battery %: "));
-    Serial.println(batteryPercentage);
+    //Serial.print(F("Battery Voltage: "));
+    //Serial.print(vBatMeasured);
+    //Serial.print(F(" - Battery %: "));
+    //Serial.println(batteryPercentage);
   }
 
   lastBatteryPercentage = batteryPercentage;
@@ -119,10 +116,6 @@ void loop(void)
   // Serial command interface for testing
   if (Serial.available()) {
     int z = Serial.read();
-    Serial.print(F("Serial data received: '"));
-    Serial.print((char) z);
-    Serial.print(F("' - "));
-    Serial.println(z);
     char command = (char)z;
     switch (command) {       
       case 'C': {
@@ -193,10 +186,32 @@ void loop(void)
         break;
       }
 
-      case 'o': {
-        uint32_t otr = counter.read_OTR();
-        Serial.print(F("OTR: "));
-        Serial.println(otr);
+      case 'x': {
+        char buf[32];
+        constexpr uint16_t buf_size = sizeof(buf);
+        Serial.print(F("Device Name: "));
+        if (ble.getDevName(buf, buf_size)) {
+          Serial.println(buf);
+        } else {
+          Serial.println(F("Error"));
+        }
+        break;
+      }
+
+      case 'y': {
+        Serial.print(F("Is connectable? "));
+        Serial.println(ble.isConnectable() ? F("Yes") : F("No"));        
+        break;
+      }
+
+      case 'z': {
+        Serial.print(F("Deleting bonds... "));
+        if (ble.deleteBonds()) {
+          Serial.println(F("OK"));
+        } else {
+          Serial.println(F("Failed"));
+        }
+        
         break;
       }
 

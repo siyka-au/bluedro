@@ -41,60 +41,61 @@
 #include "Adafruit_BLEGatt.h"
 #include "Adafruit_BLECallbacks.h"
 
-class BlueDRO: private virtual IAdafruit_BLEConnectionListener, private virtual IAdafruit_BLEDisconnectionListener, private virtual IAdafruit_BLEGattRxListener
-{
-  private:
-    Adafruit_BLE& _ble;
-    Adafruit_BLEGatt _gatt;
+class BlueDRO: private virtual IAdafruit_BLEConnectionListener,
+    private virtual IAdafruit_BLEDisconnectionListener,
+    private virtual IAdafruit_BLEGattRxListener {
+ public:
+  BlueDRO(Adafruit_BLE& ble);
+
+  void loadData(void);
+  bool begin(bool reset = true);
+  bool end(bool reset = true);
+  bool update(int32_t counter);
+
+  void position(int32_t position);
+  int32_t position(void) { return this->position_; };
+
+  void numerator(uint16_t numerator);
+  uint16_t numerator(void) { return this->numerator_; };
+
+  void denominator(uint16_t denominator);
+  uint16_t denominator(void) { return this->denominator_; };
+
+  void reverseDirection(void);
+
+  int32_t offset(void) { return this->offset_; };
+
+  void onBLEConnect(void) override;
+  void onBLEDisconnect(void) override;
+  void onBLEGattRx(int32_t characteristicId, uint8_t data[], uint16_t dataLength) override;
+
+ private:
+  Adafruit_BLE& _ble;
+  Adafruit_BLEGatt _gatt;
     
-    static uint8_t serviceUuid[16];
-    static uint8_t positionCharacteristicUuid[16];
-    static uint8_t numeratorCharacteristicUuid[16];
-    static uint8_t denominatorCharacteristicUuid[16];
-    static uint8_t diameterModeCharacteristicUuid[16];
-    static uint8_t reverseCharacteristicUuid[16];
-    static uint8_t setPositionCharacteristicUuid[16];
+  static uint8_t serviceUuid[16];
+  static uint8_t positionCharacteristicUuid[16];
+  static uint8_t numeratorCharacteristicUuid[16];
+  static uint8_t denominatorCharacteristicUuid[16];
+  static uint8_t diameterModeCharacteristicUuid[16];
+  static uint8_t reverseCharacteristicUuid[16];
+  static uint8_t setPositionCharacteristicUuid[16];
 
-    uint8_t serviceId;
-    uint8_t positionCharacteristicId;
-    uint8_t numeratorCharacteristicId;
-    uint8_t denominatorCharacteristicId;
-    uint8_t diameterModeCharacteristicId;
-    uint8_t reverseCharacteristicId;
-    uint8_t setPositionCharacteristicId;
+  uint8_t serviceId;
+  uint8_t positionCharacteristicId;
+  uint8_t numeratorCharacteristicId;
+  uint8_t denominatorCharacteristicId;
+  uint8_t diameterModeCharacteristicId;
+  uint8_t reverseCharacteristicId;
+  uint8_t setPositionCharacteristicId;
 
-    int32_t counter_;
-    int32_t position_;
-    int32_t offset_;
-    uint16_t numerator_;
-    uint16_t denominator_;
-    bool reverse_;
-    int8_t direction_factor_;
+  int32_t counter_;
+  int32_t position_;
+  int32_t offset_;
+  uint16_t numerator_;
+  uint16_t denominator_;
+  bool reverse_;
+  int8_t direction_factor_;
 
-    void onBLEConnect(void) override;
-    void onBLEDisconnect(void) override;
-    void onBLEGattRx(int32_t characteristicId, uint8_t data[], uint16_t dataLength) override;
-
-    void updatePosition(void);
-    
-  public:
-    BlueDRO(Adafruit_BLE& ble);
-
-    void loadData(void);
-    bool begin(bool reset = true);
-    bool end(bool reset = true);
-    bool update(int32_t counter);
-
-    void position(int32_t position);
-    int32_t position(void) { return this->position_; };
-
-    void numerator(uint16_t numerator);
-    uint16_t numerator(void) { return this->numerator_; };
-
-    void denominator(uint16_t denominator);
-    uint16_t denominator(void) { return this->denominator_; };
-
-    void reverseDirection(void);
-
-    int32_t offset(void) { return this->offset_; };
+  void updatePosition(void);
 };
