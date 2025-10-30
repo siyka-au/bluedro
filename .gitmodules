@@ -1,6 +1,6 @@
-[submodule "Adafruit_BluefruitLE_nRF51"]
+[submodule "lib/Adafruit_BluefruitLE_nRF51"]
 	path = lib/Adafruit_BluefruitLE_nRF51
 	url = git@github.com:siyka-au/Adafruit_BluefruitLE_nRF51.git
-[submodule "LS7366"]
+[submodule "lib/LS7366"]
 	path = lib/LS7366
 	url = git@github.com:siyka-au/LS7366.git
