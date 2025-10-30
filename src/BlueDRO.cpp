@@ -233,9 +233,17 @@ void BlueDRO::onBLEGattRx(int32_t characteristicId, uint8_t data[], uint16_t dat
 
   if (characteristicId == this->numeratorCharacteristicId)
   {
+    uint16_t numerator = _gatt.getCharInt16(this->numeratorCharacteristicId);
+    this->numerator(numerator);
+    Serial.print("Setting numerator = ");
+    Serial.println(numerator);
   }
   else if (characteristicId == this->denominatorCharacteristicId)
   {
+    uint16_t denominator = _gatt.getCharInt16(this->denominatorCharacteristicId);
+    this->denominator(denominator);
+    Serial.print("Setting denominator = ");
+    Serial.println(denominator);
   }
   else if (characteristicId == this->reverseCharacteristicId)
   {
